@@ -16,8 +16,16 @@ One Big Table modeling technique utilizing complex data types in Snowflake, such
 * **Limited index support:** Some databases cannot efficiently index inside STRUCTs or ARRAYS.
 * **Query performance trade-offs:** Extracting, filtering, and transforming these types can be slower compared to normalized tables.
 
+
+
 # ARRAY (Lists of Values)
-An ARRAY stores multiple values of the same type within a single column.
+A Snowflake array is similar to an array in many other programming languages. An array contains 0 or more pieces of data. Each element is accessed by specifying its position in the array. Each value in a semi-structured array is of type ```VARIANT```. A ```VARIANT``` value can contain a value of any other data type.
+
+ARRAY constants have the following syntax:
+```[<value> [, <value> , ...]]```
+
+Where:
+* ```<value>```: The value that is associated with an array element. The value can be a literal or an expression. The value can be any data type.
 
 **Example**
 ``` sql
@@ -123,20 +131,58 @@ Flattens an ARRAY of ARRAYs into a single ARRAY. The function effectively concat
 ARRAY_FLATTEN( <array> )
 ```
 
-# STRUCT (Nested Objects)
-A STRUCT is similar to a dictionary or JSON object, allowing you to group multiple related fields under a single column.
+# OBJECT
+A Snowflake OBJECT value is analogous to a JSON “object”. In other programming languages, the corresponding data type is often called a “dictionary,” “hash,” or “map.” An OBJECT value contains key-value pairs. In Snowflake semi-structured OBJECT data, each key is a ```VARCHAR``` value, and each value is a ```VARIANT``` value.
+
+OBJECT constants have the following syntax:
+``` { [<key>: <value> [, <key>: <value> , ...]] } ```
+
+Where: 
+    
+* ```<key>```: The key in a key-value pair. The key must be a string literal.
+* ```<value>```: The value that is associated with the key. The value can be a literal or an expression. The value can be any data type.
 
 **Example**
-``` sql
-CREATE TABLE sales (
-    order_id INT,
-    customer STRUCT<first_name STRING, last_name STRING, email STRING>
+``` sqlthat
+CREATE TABLE customer(
+    id INT,
+    info OBJECT
 );
 
-SELECT customer.first_name, customer.email 
-FROM sales;
-
+SELECT 
+    id, 
+    info:name,
+    info:age,
+    info:city
+FROM customer
 ```
+
+## Creating OBJECT
+
+### OBJECT_CONSTRUCT[_KEEP_NULL]
+Returns an OBJECT constructed from the arguments.
+
+```sql
+OBJECT_CONSTRUCT( [<key>, <value> [, <key>, <value> , ...]] )
+
+OBJECT_CONSTRUCT(*)
+```
+
+### Empty bracket - {}
+This is an empty OBJECT value.
+
+### Key-Value pair { 'key1': 'value1' , 'key2': 'value2' } 
+contains the specified key-value pairs for the OBJECT value using literals for the values.
+
+### Key-Value pair with @vairable { 'key1': c1+1 , 'key2': c1+2 } 
+This contains the specified key-value pairs for the OBJECT value using expressions for the values.
+
+### Wildcat * {*} 
+This is a wildcard that constructs the OBJECT value from the specified data using the attribute names as keys and the associated values as values.
+
+# VARIANT 
+
+
 
 ## VARIANT vs STRUCT (OBJECT in Snowflake)
 
